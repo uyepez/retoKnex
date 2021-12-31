@@ -14,17 +14,17 @@ fetch('./lista')
 
 // Escuchando el evento 'diego'
 socket.on("productos", data => {
-    console.log("data productos: ", data);
+    console.log("data cliente: ", data[0]);
 
     data.forEach(producto => {
-        console.log(producto);
+        console.log(producto.nombre);
 
         var tr = `<tr>
-          <td>`+ producto[1] + `</td>
-          <td>`+ producto[4] + `</td>
-          <td><img src="`+ producto[6] + `" alt="" height="60px"></td>
+          <td>`+ producto.nombre + `</td>
+          <td>`+ producto.precio + `</td>
+          <td><img src="`+ producto.foto + `" alt="" height="60px"></td>
         </tr>`;
-        $("#cuerpoTabla").append(tr)
+        $("#cuerpoTabla").prepend(tr)
     });
     //$("#chat").append(data + "<br>")
 })
@@ -32,14 +32,14 @@ socket.on("productos", data => {
 
 
 
-socket.on("mensajes", dataMessajes =>{
+socket.on("mensajes", dataMessajes => {
     console.log("data messajes: ", dataMessajes);
 
     dataMessajes.forEach(mensaje => {
         console.log(mensaje.text);
-        if(mensaje.author == usuario){
+        if (mensaje.author == usuario) {
             var tr = `<div class="alert alert-success mt-3"><strong>${mensaje.author}</strong><small>[${mensaje.fecha}]</small><em>: ${mensaje.text}</em></div>`;
-        }else{
+        } else {
             var tr = `<div class="alert alert-secondary mt-3"><strong>${mensaje.author}</strong><small>[${mensaje.fecha}]</small><em>: ${mensaje.text}</em></div>`;
         }
 
@@ -49,13 +49,18 @@ socket.on("mensajes", dataMessajes =>{
 
 
 //post de formulario
-$("#productoForm").submit(e =>{
+$("#productoForm").submit(e => {
     e.preventDefault();
 
     const producto = {
-        title: $("#title").val(),
-        price: $("#price").val(),
-        thumbnail: $("#thumbnail").val()
+        nombre: $("#nombre").val(),
+        precio: parseInt($("#precio").val()),
+        foto: $("#foto").val(),
+        descripcion: "",
+        codigo: 0,
+        stock: 0,
+        id:0,
+        timestamp: Date.now(),
     }
 
     socket.emit('new-product', producto);
@@ -77,7 +82,7 @@ $('#loginForm').submit(e => {
         $("#correo").attr("readonly", true);
         $("#mensaje").focus();
 
-    }else{
+    } else {
         alert("introduce un correo valido")
     }
 
@@ -99,7 +104,7 @@ $('#enviaMensaje').click(e => {
         socket.emit('new-mensaje', newMessaje);
         $("#mensaje").val('');
     }
-    
+
     return false;
 })
 
@@ -119,11 +124,11 @@ function nuevaFoto() {
         { foto: "https://cdn1.iconfinder.com/data/icons/christmas-flat-4/58/015_-_Stocking-128.png" },
         { foto: "https://cdn1.iconfinder.com/data/icons/christmas-flat-4/59/026_-_Baubles-128.png" }
     ]
-    
+
     const randomElement = listaImagenes[Math.floor(Math.random() * listaImagenes.length)];
-    $('#thumbnail').val(randomElement.foto)
+    $('#foto').val(randomElement.foto)
     $('#imgFoto').attr("src", randomElement.foto);
-    
+
 }
 
 nuevaFoto()
