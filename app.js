@@ -7,7 +7,7 @@ const httpServer = new HttpServer(app)
 const io = new IOServer(httpServer)
 
 const Productos = require('./productos.js')
-const Mensajes = require('./mensajes.js')
+
 
 app.use(express.static('./public'))
 app.use(express.urlencoded({ extended: false }));
@@ -27,36 +27,15 @@ app.set('view engine', 'ejs');
 }*/
 
 //inicializa tabla de productos
-let tablas = new Productos()
-tablas.existeTabla('productos').then(res => {
-    const existeTabla = res ? console.log("existe la tabla") : console.log("no existe la tabla se creo una nueva");
-    if (!res) {
-        tablas.nuevaTablaProductos("productos", "estructuraTabla")
-    } else {
-        //tablas.limpiaTabla("productos").then(rest => { console.log(`La tabla productos ya existe se eliminaron ${rest} productos`); })
-    }
-})
+let tablas = new Productos("productos")
+tablas.nuevaTablaProductos()
 
-//inicializa tabla de mensajes
-let mensajes = new Mensajes()
-mensajes.existeTabla('mensajes').then(res => {
-    const existeTabla = res ? console.log("existe la tabla") : console.log("no existe la tabla se creo una nueva");
-    if (!res) {
-        mensajes.nuevaTablaMensajes("mensajes", "estructuraTabla")
-    } else {
-        //mensajes.limpiaTabla("productos").then(rest => { console.log(`La tabla mensajes ya existe se eliminaron ${rest} mensajes`); })
-    }
-})
 
 let listaMensajes = [];
 let listaProductos = [];
-const listaBaseProductos = tablas.lista().then(respLista => { 
+const listaBaseProductos = tablas.getAll().then(respLista => { 
     listaProductos= JSON.parse(JSON.stringify(respLista))
     console.log("lista productos cargada");     
-})
-const listaBaseMensajes = mensajes.lista().then(respLista => { 
-    listaMensajes= JSON.parse(JSON.stringify(respLista))
-    console.log("lista mensajes cargada");     
 })
 
 
@@ -93,13 +72,9 @@ io.on('connection', (socket) => {
     })
 
     socket.on("new-mensaje", data => {
-        const mensajeNuevo = data;
         listaMensajes.push(data);
-        let nuevoMensaje = mensajes.nuevo(mensajeNuevo).then( respMensaje => {
-            mensajeNuevo.id = parseInt(respMensaje)
-            listaMensajes.push(mensajeNuevo)
-            io.sockets.emit("mensajes", [mensajeNuevo])
-        })
+        console.log("data mensaje: ", data);
+        io.sockets.emit("mensajes", [data])
     })
 
 })
